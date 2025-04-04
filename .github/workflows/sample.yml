@@ -34,12 +34,12 @@ jobs:
       - name: Simulate build step with large files
         run: |
           echo "Creating cacheable files (5–10MB each)..."
-          base64 /dev/urandom | head -c 20000000 > ~/.cache/build-cache/main1.pyc
-          base64 /dev/urandom | head -c 10000000 > ~/.cache/build-cache/build1.meta
+          base64 /dev/urandom | head -c 200000000 > ~/.cache/build-cache/main2.pyc
+          base64 /dev/urandom | head -c 600000000 > ~/.cache/build-cache/build2.meta
 
           echo "Creating artifacts (5–10MB each)..."
-          base64 /dev/urandom | head -c 10000000 > ./artifacts/output/release1.txt
-          base64 /dev/urandom | head -c 30000000 > ./artifacts/output/app1.zip
+          base64 /dev/urandom | head -c 100000000 > ./artifacts/output/release2.txt
+          base64 /dev/urandom | head -c 400000000 > ./artifacts/output/app2.zip
 
       - name: Save cache
         uses: actions/cache@v4
