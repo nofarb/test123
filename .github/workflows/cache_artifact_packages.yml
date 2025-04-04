@@ -40,8 +40,8 @@ jobs:
           dd if=/dev/urandom bs=1M count=8 status=none | base64 > ~/.cache/build-cache/build.meta
 
           echo "Generating artifact files..."
-          dd if=/dev/urandom bs=100M count=5 status=none | base64 > ./artifacts/output/release.txt
-          dd if=/dev/urandom bs=20M count=9 status=none | base64 > ./artifacts/output/app.zip
+          dd if=/dev/urandom bs=100M count=7 status=none | base64 > ./artifacts/output/release2.txt
+          dd if=/dev/urandom bs=1M count=9 status=none | base64 > ./artifacts/output/app.zip
 
           echo "Creating PDF (xxx.pdf)..."
           convert -size 600x100 xc:white -gravity center -pointsize 20 -annotate 0 "This is a test PDF" ./artifacts/output/xxx.pdf
@@ -89,11 +89,11 @@ jobs:
           name: rrrr.html
           path: ./artifacts/output/rrrr.html
 
-      - name: Upload artifact – release.txt
+      - name: Upload artifact – release2.txt
         uses: actions/upload-artifact@v4
         with:
-          name: release.txt
-          path: ./artifacts/output/release.txt
+          name: release2.txt
+          path: ./artifacts/output/release2.txt
 
       - name: Upload artifact – app.zip
         uses: actions/upload-artifact@v4
