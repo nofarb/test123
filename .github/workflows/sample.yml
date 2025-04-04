@@ -1,54 +1,40 @@
-name: Large File Cache and Artifact Pipeline
+name: Parallel Sleep Jobs
 
 on:
-  push:
-    branches: [AAA]
+  workflow_dispatch:
 
 jobs:
-  build:
+  parallel-sleep:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        iteration:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 17
+          - 18
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+    name: Sleep Job #${{ matrix.iteration }}
     steps:
-      - name: Checkout (empty repo is fine)
-        uses: actions/checkout@v4
-
-      - name: Create directory structure
-        run: |
-          mkdir -p ~/.cache/build-cache/
-          mkdir -p ./artifacts/output/
-          mkdir -p ./src/
-
-      - name: Restore cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/build-cache
-          key: build-cache-${{ runner.os }}-${{ github.sha }}
-          restore-keys: |
-            build-cache-${{ runner.os }}-
-
-      - name: Simulate source files
-        run: |
-          echo 'print("Hello from main.py")' > ./src/main.py
-          echo 'class Dummy: pass' > ./src/helper.py
-
-      - name: Simulate build step with large files
-        run: |
-          echo "Creating cacheable files (5–10MB each)..."
-          base64 /dev/urandom | head -c 200000000 > ~/.cache/build-cache/main2.pyc
-          base64 /dev/urandom | head -c 600000000 > ~/.cache/build-cache/build2.meta
-
-          echo "Creating artifacts (5–10MB each)..."
-          base64 /dev/urandom | head -c 100000000 > ./artifacts/output/release2.txt
-          base64 /dev/urandom | head -c 400000000 > ./artifacts/output/app2.zip
-
-      - name: Save cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/build-cache
-          key: build-cache-${{ runner.os }}-${{ github.sha }}
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: simulated-artifacts
-          path: ./artifacts/output/
+      - name: Sleep for 1 minute
+        run: sleep 60
