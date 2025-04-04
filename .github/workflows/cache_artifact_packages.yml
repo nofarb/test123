@@ -1,4 +1,4 @@
-name: Full Storage Example – Cache, Artifact, and Package
+name: Full Storage Pipeline – Cache, Individual Artifacts, Package
 
 on:
   push:
@@ -9,14 +9,17 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write   # Needed for creating GitHub Releases
-      packages: write   # If you publish to container/npm/maven later
+      contents: write
+      packages: write
 
     steps:
-      - name: Checkout (empty repo is fine)
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up folders
+      - name: Install ImageMagick (for PDF generation)
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      - name: Set up directories
         run: |
           mkdir -p ~/.cache/build-cache/
           mkdir -p ./artifacts/output/
@@ -30,20 +33,36 @@ jobs:
           restore-keys: |
             build-cache-${{ runner.os }}-
 
-      - name: Simulate source files
+      - name: Simulate build and generate files
         run: |
-          echo 'print("Hello from main.py")' > ./src/main.py
-          echo 'class Dummy: pass' > ./src/helper.py
+          echo "Generating cacheable files..."
+          dd if=/dev/urandom bs=1M count=7 status=none | base64 > ~/.cache/build-cache/main.pyc
+          dd if=/dev/urandom bs=1M count=8 status=none | base64 > ~/.cache/build-cache/build.meta
 
-      - name: Simulate build – large files (5–10MB)
-        run: |
-          echo "Creating cacheable files..."
-          base64 /dev/urandom | head -c 7000000 > ~/.cache/build-cache/main.pyc
-          base64 /dev/urandom | head -c 8000000 > ~/.cache/build-cache/build.meta
+          echo "Generating artifact files..."
+          dd if=/dev/urandom bs=1M count=5 status=none | base64 > ./artifacts/output/release.txt
+          dd if=/dev/urandom bs=1M count=9 status=none | base64 > ./artifacts/output/app.zip
 
-          echo "Creating artifact files..."
-          base64 /dev/urandom | head -c 5000000 > ./artifacts/output/release.txt
-          base64 /dev/urandom | head -c 9000000 > ./artifacts/output/app.zip
+          echo "Creating PDF (xxx.pdf)..."
+          convert -size 600x100 xc:white -gravity center -pointsize 20 -annotate 0 "This is a test PDF" ./artifacts/output/xxx.pdf
+
+          echo "Creating CSS (ccc.css)..."
+          echo "body { background-color: #f0f0f0; }" > ./artifacts/output/ccc.css
+
+          echo "Creating HTML (rrrr.html)..."
+          cat <<EOF > ./artifacts/output/rrrr.html
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Test Report</title>
+            <link rel="stylesheet" href="ccc.css">
+          </head>
+          <body>
+            <h1>Test Results</h1>
+            <p>All tests passed ✅</p>
+          </body>
+          </html>
+          EOF
 
       - name: Save cache
         uses: actions/cache@v4
@@ -51,17 +70,43 @@ jobs:
           path: ~/.cache/build-cache
           key: build-cache-${{ runner.os }}-${{ github.sha }}
 
-      - name: Upload build artifacts
+      # 🎯 Upload artifacts individually so they appear separately in the UI
+      - name: Upload artifact – xxx.pdf
         uses: actions/upload-artifact@v4
         with:
-          name: simulated-artifacts
-          path: ./artifacts/output/
+          name: xxx.pdf
+          path: ./artifacts/output/xxx.pdf
 
-      - name: Publish app.zip as GitHub Release Asset
+      - name: Upload artifact – ccc.css
+        uses: actions/upload-artifact@v4
+        with:
+          name: ccc.css
+          path: ./artifacts/output/ccc.css
+
+      - name: Upload artifact – rrrr.html
+        uses: actions/upload-artifact@v4
+        with:
+          name: rrrr.html
+          path: ./artifacts/output/rrrr.html
+
+      - name: Upload artifact – release.txt
+        uses: actions/upload-artifact@v4
+        with:
+          name: release.txt
+          path: ./artifacts/output/release.txt
+
+      - name: Upload artifact – app.zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: app.zip
+          path: ./artifacts/output/app.zip
+
+      # 📦 Also publish app.zip as a GitHub Release asset
+      - name: Publish app.zip as GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: simulated-release-${{ github.run_number }}
-          name: Simulated Build Release ${{ github.run_number }}
+          name: Simulated Release ${{ github.run_number }}
           files: ./artifacts/output/app.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
