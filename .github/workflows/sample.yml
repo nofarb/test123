@@ -1,6 +1,6 @@
 name: Parallel Sleep Jobs
 
-on:
+on: 
   push:
     branches: [concurrency]
 
