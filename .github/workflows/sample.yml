@@ -1,4 +1,4 @@
-name: Self-Contained Cache and Artifact Pipeline
+name: Large File Cache and Artifact Pipeline
 
 on:
   push:
@@ -31,16 +31,15 @@ jobs:
           echo 'print("Hello from main.py")' > ./src/main.py
           echo 'class Dummy: pass' > ./src/helper.py
 
-      - name: Simulate build step
+      - name: Simulate build step with large files
         run: |
-          echo "Compiling..."
-          # Cacheable: pretend this is a compiled output or build state
-          echo "bytecode-of-main" > ~/.cache/build-cache/main.pyc
-          echo "build-metadata" > ~/.cache/build-cache/build.meta
-          
-          # Artifact: pretend this is your actual output
-          echo "Zipped release content" > ./artifacts/output/release.txt
-          zip -j ./artifacts/output/app.zip ./src/*.py
+          echo "Creating cacheable files (5–10MB each)..."
+          base64 /dev/urandom | head -c 7000000 > ~/.cache/build-cache/main.pyc
+          base64 /dev/urandom | head -c 8000000 > ~/.cache/build-cache/build.meta
+
+          echo "Creating artifacts (5–10MB each)..."
+          base64 /dev/urandom | head -c 5000000 > ./artifacts/output/release.txt
+          base64 /dev/urandom | head -c 9000000 > ./artifacts/output/app.zip
 
       - name: Save cache
         uses: actions/cache@v4
