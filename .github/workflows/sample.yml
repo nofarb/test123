@@ -1,0 +1,55 @@
+name: Self-Contained Cache and Artifact Pipeline
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (empty repo is fine)
+        uses: actions/checkout@v4
+
+      - name: Create directory structure
+        run: |
+          mkdir -p ~/.cache/build-cache/
+          mkdir -p ./artifacts/output/
+          mkdir -p ./src/
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/build-cache
+          key: build-cache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            build-cache-${{ runner.os }}-
+
+      - name: Simulate source files
+        run: |
+          echo 'print("Hello from main.py")' > ./src/main.py
+          echo 'class Dummy: pass' > ./src/helper.py
+
+      - name: Simulate build step
+        run: |
+          echo "Compiling..."
+          # Cacheable: pretend this is a compiled output or build state
+          echo "bytecode-of-main" > ~/.cache/build-cache/main.pyc
+          echo "build-metadata" > ~/.cache/build-cache/build.meta
+          
+          # Artifact: pretend this is your actual output
+          echo "Zipped release content" > ./artifacts/output/release.txt
+          zip -j ./artifacts/output/app.zip ./src/*.py
+
+      - name: Save cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/build-cache
+          key: build-cache-${{ runner.os }}-${{ github.sha }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulated-artifacts
+          path: ./artifacts/output/
