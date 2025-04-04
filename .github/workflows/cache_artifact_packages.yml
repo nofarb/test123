@@ -1,4 +1,4 @@
-name: Full Storage Pipeline – Cache, Individual Artifacts, Package
+name: Full CI – Cache, Artifacts, Release, GitHub Package
 
 on:
   push:
@@ -40,7 +40,7 @@ jobs:
           dd if=/dev/urandom bs=1M count=8 status=none | base64 > ~/.cache/build-cache/build.meta
 
           echo "Generating artifact files..."
-          dd if=/dev/urandom bs=100M count=7 status=none | base64 > ./artifacts/output/release2.txt
+          dd if=/dev/urandom bs=1M count=5 status=none | base64 > ./artifacts/output/release.txt
           dd if=/dev/urandom bs=1M count=9 status=none | base64 > ./artifacts/output/app.zip
 
           echo "Creating PDF (xxx.pdf)..."
@@ -70,7 +70,7 @@ jobs:
           path: ~/.cache/build-cache
           key: build-cache-${{ runner.os }}-${{ github.sha }}
 
-      # 🎯 Upload artifacts individually so they appear separately in the UI
+      # 🎯 Upload each file individually
       - name: Upload artifact – xxx.pdf
         uses: actions/upload-artifact@v4
         with:
@@ -89,11 +89,11 @@ jobs:
           name: rrrr.html
           path: ./artifacts/output/rrrr.html
 
-      - name: Upload artifact – release2.txt
+      - name: Upload artifact – release.txt
         uses: actions/upload-artifact@v4
         with:
-          name: release2.txt
-          path: ./artifacts/output/release2.txt
+          name: release.txt
+          path: ./artifacts/output/release.txt
 
       - name: Upload artifact – app.zip
         uses: actions/upload-artifact@v4
@@ -101,7 +101,7 @@ jobs:
           name: app.zip
           path: ./artifacts/output/app.zip
 
-      # 📦 Also publish app.zip as a GitHub Release asset
+      # 📦 Publish app.zip to GitHub Releases
       - name: Publish app.zip as GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -110,3 +110,14 @@ jobs:
           files: ./artifacts/output/app.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 🐳 Simulate publishing to GitHub Container Registry (GitHub Packages)
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and Push dummy Docker image
+        run: |
+          echo "FROM alpine\nCMD echo 'Hello from simulated package'" > Dockerfile
+          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/simulated-artifact:latest
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
