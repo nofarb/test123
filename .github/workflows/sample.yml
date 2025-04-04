@@ -2,7 +2,7 @@ name: Large File Cache and Artifact Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [AAA]
 
 jobs:
   build:
