@@ -1,7 +1,8 @@
 name: Parallel Sleep Jobs
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [concurrency]
 
 jobs:
   parallel-sleep:
