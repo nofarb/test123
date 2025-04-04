@@ -117,7 +117,8 @@ jobs:
 
       - name: Build and Push dummy Docker image
         run: |
-          echo "FROM alpine\nCMD echo 'Hello from simulated package'" > Dockerfile
+          echo "FROM alpine" > Dockerfile
+          echo "CMD echo 'Hello from simulated package'" >> Dockerfile
           IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/simulated-artifact:latest
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
